@@ -1,0 +1,37 @@
+version: 2.1
+
+# Define the jobs we want to run for this project
+jobs:
+  build:
+    docker:
+      - image: cimg/node:14.15
+# Define the jobs we want to run for this project
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore node Package Cache
+          keys:
+            - v1-dependencies-{{checksum "package-lock.json"}}
+            - v1-dependencies
+      - run:
+          name: Install Dependencies
+          command: npm run api:install 
+      - save_cache:
+          key:  v1-dependencies
+          paths: .node_modules
+      - run:
+          name:  build the files
+          command: npm run api:build
+      - run:
+          name: Deploy Netlify
+          command: cd udagram/udagram-api && npm run netDeploy
+
+
+
+# Orchestrate our job run sequence
+workflows:
+  build_and_test:
+    jobs:
+      - build
+
+
